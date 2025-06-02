@@ -126,7 +126,13 @@ void SettingsController::clearLogs()
 
 void SettingsController::backupAppConfig(const QString &fileName)
 {
-    SystemController::saveFile(fileName, m_settings->backupAppConfig());
+    QByteArray data = m_settings->backupAppConfig();
+    QJsonDocument doc = QJsonDocument::fromJson(data);
+    QJsonObject cfg = doc.object();
+
+    cfg["Conf/autoStart"] = Autostart::isAutostart();
+
+    SystemController::saveFile(fileName, QJsonDocument(cfg).toJson());
 }
 
 void SettingsController::restoreAppConfig(const QString &fileName)
@@ -139,10 +145,19 @@ void SettingsController::restoreAppConfig(const QString &fileName)
 void SettingsController::restoreAppConfigFromData(const QByteArray &data)
 {
     bool ok = m_settings->restoreAppConfig(data);
+
     if (ok) {
+        QJsonObject new_config_data = QJsonDocument::fromJson(data).object();
+
         m_serversModel->resetModel();
         m_languageModel->changeLanguage(
                 static_cast<LanguageSettings::AvailableLanguageEnum>(m_languageModel->getCurrentLanguageIndex()));
+
+        bool autoStart = false;
+        if (new_config_data.contains("Conf/autoStart")) {
+            autoStart = new_config_data["Conf/autoStart"].toBool();
+        }
+        toggleAutoStart(autoStart);
         emit restoreBackupFinished();
     } else {
         emit changeSettingsErrorOccurred(tr("Backup file is corrupted"));
