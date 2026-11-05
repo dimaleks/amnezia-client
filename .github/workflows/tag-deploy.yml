@@ -10,6 +10,7 @@ jobs:
 
   Build-Android-Release:
     name: 'Build-Android-Release'
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     env:
