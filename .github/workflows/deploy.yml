@@ -568,7 +568,7 @@ jobs:
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v7
       with:
-        path: deploy/build/AmneziaVPN_*_macos_x64.pkg
+        path: deploy/build/AmneziaVPN_*_macos_arm64.pkg
         archive: false
         retention-days: 7
 
